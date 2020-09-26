@@ -1,6 +1,7 @@
-import path from 'path'
-import fs from 'fs'
 import {workspace} from 'coc.nvim'
+
+import fs from 'fs'
+import path from 'path'
 import which from 'which'
 import {configDir} from './config'
 
@@ -9,10 +10,14 @@ export async function installLuaLsp(force = false): Promise<void> {
     return
   }
   const baseDir = await configDir('tools')
+  let installCmd = `luarocks install --tree ${baseDir} --server=http://luarocks.org/dev lua-lsp`
 
-  await workspace.runTerminalCommand(
-    `luarocks install --tree ${baseDir} --server=http://luarocks.org/dev lua-lsp`
-  )
+  const luaVersion = workspace.getConfiguration().get('lua', {})['version']
+  if(luaVersion) {
+    installCmd += ` --lua-version=${luaVersion}`
+  }        
+
+  await workspace.runTerminalCommand(installCmd)
 }
 
 export async function luaLspBin(): Promise<string> {
